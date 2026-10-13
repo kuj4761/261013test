@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeakWise - AI 영어 회화 & 실시간 문장 첨삭 튜터</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+
+  <!-- Top Navigation Bar -->
+  <header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+        <i data-lucide="sparkles" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-cyan-600 bg-clip-text text-transparent">SpeakWise</span>
+          <span id="ai-engine-badge" class="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+            스마트 시뮬레이션
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">AI 회화 코칭 & 실시간 문장 첨삭</p>
+      </div>
+    </div>
+
+    <!-- Center Navigation Tabs -->
+    <nav class="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
+      <button data-tab="chat" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700 shadow-sm">
+        <i data-lucide="message-square" class="w-4 h-4 inline-block mr-1"></i> 회화 튜터
+      </button>
+      <button data-tab="scenarios" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900">
+        <i data-lucide="compass" class="w-4 h-4 inline-block mr-1"></i> 롤플레잉 상황
+      </button>
+      <button data-tab="corrections" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900">
+        <i data-lucide="file-check" class="w-4 h-4 inline-block mr-1"></i> 첨삭 노트
+      </button>
+      <button data-tab="flashcards" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900">
+        <i data-lucide="layers" class="w-4 h-4 inline-block mr-1"></i> 플래시카드
+      </button>
+      <button data-tab="stats" class="tab-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900">
+        <i data-lucide="award" class="w-4 h-4 inline-block mr-1"></i> 대시보드
+      </button>
+    </nav>
+
+    <!-- Right Header Actions (Streak, XP, Settings) -->
+    <div class="flex items-center gap-3">
+      <!-- Streak & XP Badges -->
+      <div class="flex items-center gap-2 text-xs font-semibold">
+        <div class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900">
+          <i data-lucide="flame" class="w-3.5 h-3.5 fill-current"></i>
+          <span id="streak-count">1일 연속</span>
+        </div>
+        <div class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900">
+          <i data-lucide="zap" class="w-3.5 h-3.5 fill-current"></i>
+          <span id="xp-count">0 XP</span>
+        </div>
+      </div>
+
+      <!-- Settings Button -->
+      <button id="open-settings-btn" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="설정">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Bottom Tab Bar -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-around z-40 px-2">
+    <button data-tab="chat" class="mobile-tab-btn flex flex-col items-center gap-1 text-indigo-600 text-xs font-medium">
+      <i data-lucide="message-square" class="w-5 h-5"></i>
+      <span>회화</span>
+    </button>
+    <button data-tab="scenarios" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-500 text-xs font-medium">
+      <i data-lucide="compass" class="w-5 h-5"></i>
+      <span>상황</span>
+    </button>
+    <button data-tab="corrections" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-500 text-xs font-medium">
+      <i data-lucide="file-check" class="w-5 h-5"></i>
+      <span>첨삭</span>
+    </button>
+    <button data-tab="flashcards" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-500 text-xs font-medium">
+      <i data-lucide="layers" class="w-5 h-5"></i>
+      <span>단어장</span>
+    </button>
+    <button data-tab="stats" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-500 text-xs font-medium">
+      <i data-lucide="award" class="w-5 h-5"></i>
+      <span>통계</span>
+    </button>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 overflow-hidden relative">
+
+    <!-- VIEW 1: AI CONVERSATION & LIVE CORRECTION -->
+    <section id="view-chat" class="h-full flex flex-col lg:flex-row">
+      
+      <!-- Left: Chat Room (Conversation Stream & Input) -->
+      <div class="flex-1 flex flex-col h-full bg-slate-50/50 dark:bg-slate-900/50 overflow-hidden">
+        
+        <!-- Scenario Banner & Missions Bar -->
+        <div class="px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div class="flex items-center gap-3">
+            <span id="scenario-icon" class="text-2xl p-1.5 bg-indigo-50 dark:bg-indigo-950/60 rounded-xl">☕</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 id="scenario-title" class="font-bold text-slate-900 dark:text-white text-base">카페 주문 & 커스텀 요청</h2>
+                <span id="scenario-difficulty" class="text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Beginner</span>
+              </div>
+              <p id="scenario-role" class="text-xs text-slate-500 dark:text-slate-400">대화 상대: 바리스타 알렉스</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="show-missions-btn" class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1.5 transition">
+              <i data-lucide="target" class="w-3.5 h-3.5 text-indigo-500"></i>
+              <span>미션 확인</span>
+            </button>
+            <button id="reset-chat-btn" class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-1 transition" title="대화 새로고침">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              <span>처음부터</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mission Drawer / Dropdown (collapsible) -->
+        <div id="mission-drawer" class="hidden px-4 py-2.5 bg-indigo-50/70 dark:bg-indigo-950/40 border-b border-indigo-100 dark:border-indigo-900/50">
+          <p class="text-xs font-semibold text-indigo-900 dark:text-indigo-200 mb-1.5">🎯 이번 대화의 핵심 미션:</p>
+          <div id="missions-list" class="flex flex-col gap-1 text-xs text-slate-700 dark:text-slate-300">
+            <!-- Dynamic missions rendered here -->
+          </div>
+        </div>
+
+        <!-- Messages Stream -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+          <!-- Dynamic messages rendered here -->
+        </div>
+
+        <!-- Suggested Quick Replies Chips -->
+        <div id="suggested-chips-container" class="px-4 py-2 bg-white/70 dark:bg-slate-800/70 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 overflow-x-auto shrink-0">
+          <span class="text-xs font-semibold text-slate-400 shrink-0">추천 응답:</span>
+          <div id="suggested-chips" class="flex items-center gap-2">
+            <!-- Dynamic suggestion chips -->
+          </div>
+        </div>
+
+        <!-- Message Input Area -->
+        <div class="p-3 sm:p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700/60 shrink-0 pb-20 md:pb-4">
+          <form id="chat-form" class="flex items-end gap-2 max-w-4xl mx-auto">
+            
+            <!-- STT Voice Mic Button -->
+            <button type="button" id="mic-btn" class="p-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center justify-center shrink-0 shadow-sm" title="음성으로 말하기 (클릭)">
+              <i data-lucide="mic" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Text Input -->
+            <div class="flex-1 relative">
+              <textarea id="chat-input" rows="1" placeholder="영어로 편하게 말해보세요 (음성 마이크 버튼 또는 타이핑)..." 
+                class="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-700/60 border border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none text-sm resize-none transition leading-relaxed"></textarea>
+              <div id="stt-preview" class="hidden absolute -top-8 left-0 right-0 text-xs px-3 py-1 bg-indigo-600 text-white rounded-md truncate animate-pulse">
+                🎙️ 음성 인식 중...
+              </div>
+            </div>
+
+            <!-- Send Button -->
+            <button type="submit" id="send-btn" class="p-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white transition flex items-center justify-center shrink-0 shadow-md shadow-indigo-600/30">
+              <i data-lucide="send" class="w-5 h-5"></i>
+            </button>
+          </form>
+          <div class="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 mt-2 px-1">
+            <span>💡 팁: 틀려도 괜찮아요! 실시간으로 원어민 문장으로 다듬어 드립니다.</span>
+            <span class="hidden sm:inline">Enter = 전송, Shift + Enter = 줄바꿈</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: Live Sentence Feedback & Polish Panel (Desktop/Slide-over) -->
+      <aside id="feedback-panel" class="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 flex flex-col shrink-0 overflow-y-auto p-4 hidden lg:flex">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-check" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">실시간 문장 첨삭 & 교정</h3>
+          </div>
+          <span id="feedback-score-badge" class="text-xs px-2.5 py-1 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-600">
+            대기 중
+          </span>
+        </div>
+
+        <!-- Latest Feedback Card -->
+        <div id="feedback-content" class="flex-1 flex flex-col justify-center items-center text-center text-slate-400 p-6">
+          <i data-lucide="message-square-dashed" class="w-12 h-12 stroke-[1.5] mb-3 text-slate-300 dark:text-slate-600"></i>
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-300">아직 입력된 문장이 없습니다.</p>
+          <p class="text-xs mt-1 text-slate-400">영어로 문장을 말하거나 전송하면 원어민 표현으로 첨삭된 결과를 이곳에서 한눈에 비교해 드립니다.</p>
+        </div>
+      </aside>
+
+    </section>
+
+    <!-- VIEW 2: SCENARIOS GRID -->
+    <section id="view-scenarios" class="h-full overflow-y-auto p-4 sm:p-8 max-w-6xl mx-auto hidden pb-24">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">롤플레잉 학습 상황 선택</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">실제 해외 여행, 비즈니스, 일상에서 가장 자주 마주치는 생생한 상황을 골라 연습해 보세요.</p>
+      </div>
+
+      <div id="scenarios-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Dynamically rendered scenario cards -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: CORRECTION HISTORY NOTEBOOK -->
+    <section id="view-corrections" class="h-full overflow-y-auto p-4 sm:p-8 max-w-4xl mx-auto hidden pb-24">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">나의 문장 첨삭 노트</h2>
+          <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">대화하며 피드백 받은 모든 문장의 교정 이유와 원어민 표현을 모아봅니다.</p>
+        </div>
+        <span id="total-corrections-count" class="text-xs px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
+          총 0개 첨삭
+        </span>
+      </div>
+
+      <div id="corrections-history-list" class="space-y-4">
+        <!-- Dynamically rendered correction items -->
+      </div>
+    </section>
+
+    <!-- VIEW 4: FLASHCARDS SRS STUDIO -->
+    <section id="view-flashcards" class="h-full overflow-y-auto p-4 sm:p-8 max-w-2xl mx-auto hidden flex flex-col justify-center pb-24">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-2">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 망각곡선 기반 간격 반복(SRS) 학습
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">나만의 표현 플래시카드</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">카드를 클릭해 뒤집고 정답을 확인하세요.</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="flex justify-center gap-2 mb-6">
+        <button data-card-filter="all" class="card-filter-btn px-3 py-1 rounded-lg text-xs font-medium bg-indigo-600 text-white">전체 보기</button>
+        <button data-card-filter="need_review" class="card-filter-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">복습 필요</button>
+        <button data-card-filter="mastered" class="card-filter-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">완전 정복</button>
+      </div>
+
+      <!-- 3D Flip Card Container -->
+      <div id="flashcard-container" class="perspective-1000 w-full h-72 sm:h-80 cursor-pointer select-none">
+        <div id="flashcard-inner" class="card-inner">
+          
+          <!-- Front Side -->
+          <div class="card-front bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 p-6 flex flex-col justify-between shadow-lg">
+            <div class="flex items-center justify-between">
+              <span id="fc-category" class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">Daily Life</span>
+              <span id="fc-box-level" class="text-xs text-slate-400">SRS Level 1</span>
+            </div>
+            
+            <div class="text-center my-auto">
+              <p id="fc-english" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2 leading-relaxed">
+                Could you make it less sweet, please?
+              </p>
+              <button id="fc-speak-btn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 inline-flex items-center gap-1 text-xs">
+                <i data-lucide="volume-2" class="w-4 h-4"></i> 발음 듣기
+              </button>
+            </div>
+
+            <p class="text-xs text-center text-slate-400">💡 카드를 클릭하면 뜻과 해설을 확인할 수 있습니다.</p>
+          </div>
+
+          <!-- Back Side -->
+          <div class="card-back bg-gradient-to-br from-indigo-50 to-white dark:from-slate-800 dark:to-slate-850 border-2 border-indigo-200 dark:border-indigo-900/60 p-6 flex flex-col justify-between shadow-lg text-left">
+            <div>
+              <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">한국어 의미 & 해설</span>
+              <p id="fc-korean" class="text-lg font-bold text-slate-900 dark:text-white mt-1">덜 달게 만들어 주실 수 있나요?</p>
+              <p id="fc-explanation" class="text-xs text-slate-600 dark:text-slate-300 mt-3 p-3 bg-white/70 dark:bg-slate-900/60 rounded-xl leading-relaxed border border-indigo-100 dark:border-indigo-900/40">
+                음료 주문 시 단맛 조절을 정중하게 요청하는 원어민 빈출 표현
+              </p>
+            </div>
+
+            <div id="fc-original-box" class="text-xs text-slate-400">
+              내가 했던 말: <span id="fc-original" class="text-slate-600 dark:text-slate-300 font-mono">Make it not sweet</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Flashcard Controls (SRS Rating) -->
+      <div class="mt-6 flex items-center justify-between gap-3">
+        <button id="fc-prev-btn" class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </button>
+
+        <div class="flex items-center gap-3">
+          <button id="fc-hard-btn" class="px-5 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-sm font-semibold hover:bg-rose-100 transition flex items-center gap-1.5">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> 어려워요 (다시 보기)
+          </button>
+          <button id="fc-good-btn" class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shadow-md shadow-emerald-600/30 transition flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i> 기억나요 (+1단계)
+          </button>
+        </div>
+
+        <button id="fc-next-btn" class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="flex justify-center mt-4">
+        <button id="fc-delete-btn" class="text-xs text-slate-400 hover:text-rose-500 transition">이 카드 삭제하기</button>
+      </div>
+    </section>
+
+    <!-- VIEW 5: DASHBOARD & STATS -->
+    <section id="view-stats" class="h-full overflow-y-auto p-4 sm:p-8 max-w-4xl mx-auto hidden pb-24">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">학습 대시보드 & 통계</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">매일의 회화 기록과 영어 실력 향상 지표를 확인해 보세요.</p>
+      </div>
+
+      <!-- Stats Metric Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold">연속 학습 일수</span>
+            <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
+          </div>
+          <p id="dash-streak" class="text-2xl font-bold text-slate-900 dark:text-white">1일</p>
+          <span class="text-xs text-amber-500 mt-1 inline-block">매일 1회 이상 대화하기</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold">누적 연습 문장</span>
+            <i data-lucide="message-circle" class="w-4 h-4 text-indigo-500"></i>
+          </div>
+          <p id="dash-total-sentences" class="text-2xl font-bold text-slate-900 dark:text-white">0문장</p>
+          <span class="text-xs text-slate-400 mt-1 inline-block">직접 말하고 입력한 수</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold">받은 문장 첨삭</span>
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>
+          </div>
+          <p id="dash-corrections" class="text-2xl font-bold text-slate-900 dark:text-white">0회</p>
+          <span class="text-xs text-emerald-500 mt-1 inline-block">원어민 표현 피드백</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 shadow-sm">
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-semibold">누적 경험치 (XP)</span>
+            <i data-lucide="zap" class="w-4 h-4 text-violet-500"></i>
+          </div>
+          <p id="dash-xp" class="text-2xl font-bold text-slate-900 dark:text-white">0 XP</p>
+          <span class="text-xs text-violet-500 mt-1 inline-block">레벨 1 초급자</span>
+        </div>
+      </div>
+
+      <!-- Daily Goal Progress Card -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg mb-8">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h4 class="font-bold text-lg">오늘의 학습 목표 달성도</h4>
+            <p class="text-xs text-indigo-200 mt-0.5">하루 10문장 이상 영어로 대화하기</p>
+          </div>
+          <span id="dash-goal-text" class="text-sm font-bold bg-white/20 px-3 py-1 rounded-full">0 / 10 문장</span>
+        </div>
+        <div class="w-full h-3 bg-white/20 rounded-full overflow-hidden">
+          <div id="dash-goal-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Study Tips & Guides -->
+      <div class="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60">
+        <h4 class="font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+          <i data-lucide="lightbulb" class="w-5 h-5 text-amber-500"></i> 가장 효과적인 SpeakWise 활용법
+        </h4>
+        <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <li class="flex items-start gap-2">
+            <span class="text-indigo-600 font-bold">1.</span>
+            <span><strong>음성 마이크 우선 사용</strong>: 키보드 타이핑보다 마이크 버튼을 눌러 소리 내어 말할 때 뇌가 영어 발화 패턴을 3배 더 빠르게 기억합니다.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-indigo-600 font-bold">2.</span>
+            <span><strong>섀도잉(Shadowing) 훈련</strong>: AI 답변이나 첨삭 문장의 스피커 아이콘을 눌러 원어민 발음을 듣고 똑같이 2번 이상 따라 말해 보세요.</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-indigo-600 font-bold">3.</span>
+            <span><strong>단어장 저장 & 1일 1회 복습</strong>: 첨삭 창에서 '단어장에 저장'을 눌러두고 플래시카드 탭에서 망각 곡선 주기로 복습하세요.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-850 rounded-2xl max-w-lg w-full border border-slate-200 dark:border-slate-700 shadow-2xl p-6 overflow-y-auto max-h-[90vh]">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="settings" class="w-5 h-5 text-indigo-600"></i> 학습 및 AI 설정
+        </h3>
+        <button id="close-settings-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-5">
+        
+        <!-- Gemini API Key -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            Google Gemini API Key (선택 사항)
+          </label>
+          <input type="password" id="setting-api-key" placeholder="AIzaSy... (비워두면 스마트 오프라인 엔진으로 작동)"
+            class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:border-indigo-500 font-mono">
+          <div class="flex items-center justify-between text-xs text-slate-400 mt-1">
+            <span>🔒 브라우저(localStorage)에만 안전하게 보관됩니다.</span>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-600 dark:text-indigo-400 underline">무료 API 키 발급받기</a>
+          </div>
+        </div>
+
+        <!-- AI Model Selection -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">AI 모델</label>
+          <select id="setting-ai-model" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none">
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (초고속 & 권장)</option>
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          </select>
+        </div>
+
+        <!-- Voice Accent -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">원어민 발음 억양 (Accent)</label>
+          <select id="setting-voice-accent" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none">
+            <option value="en-US">미국식 영어 (US Accent - 표준)</option>
+            <option value="en-GB">영국식 영어 (UK Accent)</option>
+            <option value="en-AU">호주식 영어 (Australian)</option>
+          </select>
+        </div>
+
+        <!-- Tutor Persona -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">AI 튜터 성향 (Persona)</label>
+          <select id="setting-tutor-persona" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none">
+            <option value="emma">Emma - 따뜻하고 격려해주는 친절한 친구 (권장)</option>
+            <option value="david">David - 격식 있고 세련된 비즈니스 멘토</option>
+            <option value="sarah">Sarah - 문법과 뉘앙스를 철저히 짚어주는 꼼꼼한 튜터</option>
+          </select>
+        </div>
+
+        <!-- Speech Rate Slider -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <span>음성 재생 속도</span>
+            <span id="speech-rate-label" class="text-indigo-600 font-mono">1.0x</span>
+          </div>
+          <input type="range" id="setting-speech-rate" min="0.7" max="1.3" step="0.1" value="1.0" class="w-full accent-indigo-600">
+        </div>
+
+        <!-- Auto Speak Toggle -->
+        <div class="flex items-center justify-between pt-1">
+          <div>
+            <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">AI 답변 자동 소리 재생</span>
+            <p class="text-xs text-slate-400">새 답변이 올 때 원어민 음성으로 즉시 읽어줍니다.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="setting-auto-speak" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+        <button id="save-settings-btn" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition">
+          저장하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Application Bundle (file:// and http:// compatible) -->
+  <script src="js/bundle.js"></script>
+</body>
+</html>
